@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { MenuAlt01, TimeBack } from "griddy-icons";
+import { MenuAlt01, TimeBack, Trophy } from "griddy-icons";
 import { LifeLog } from "./LifeLog";
+import { MatchHistory } from "./MatchHistory";
 import { Menu } from "./Menu";
 import { PlayerPanel, type Rotation } from "./PlayerPanel";
 import type { RollSeatView } from "./RollOverlay";
@@ -45,6 +46,7 @@ export function GameBoard() {
   const colorKey = useGameStore((s) => s.players.map((p) => p.color).join(""));
   const [menuOpen, setMenuOpen] = useState(false);
   const [logOpen, setLogOpen] = useState(false);
+  const [matchesOpen, setMatchesOpen] = useState(false);
   const rot = rotations(mode, layout4);
 
   // Dice still tumbling. Results are already in the store; this only delays the
@@ -131,6 +133,14 @@ export function GameBoard() {
         ) : (
           <>
           <button
+            className="medallion side left"
+            aria-label="Match history"
+            onClick={() => setMatchesOpen(true)}
+            data-testid="open-matches"
+          >
+            <Trophy size={24} />
+          </button>
+          <button
             className="medallion side"
             aria-label="Life log"
             onClick={() => setLogOpen(true)}
@@ -151,6 +161,7 @@ export function GameBoard() {
       </main>
       {menuOpen && !roll.active && <Menu onClose={() => setMenuOpen(false)} />}
       {logOpen && !roll.active && <LifeLog onClose={() => setLogOpen(false)} />}
+      {matchesOpen && !roll.active && <MatchHistory onClose={() => setMatchesOpen(false)} />}
     </>
   );
 }

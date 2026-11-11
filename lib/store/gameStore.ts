@@ -11,6 +11,7 @@ import {
   createPlayers,
   defaultStartingLife,
   emptyCounters,
+  survivors,
 } from "../game/rules";
 import { advanceTie, applyRoll, createDiceRoll, rollDie } from "../game/dice";
 import type {
@@ -21,17 +22,21 @@ import type {
   Layout4,
   LifeEvent,
   ManaColor,
+  MatchRecord,
 } from "../game/types";
 
 export const STORAGE_KEY = "mtg-life:v1";
-const STORE_VERSION = 2;
+const STORE_VERSION = 3;
 const HISTORY_CAP = 500;
+const MATCH_CAP = 50;
 
 export interface GameActions {
   /** `roll: false` goes straight to the life counter; the default opens the optional roll step. */
   startGame(mode: GameMode, startingLife?: number, options?: { roll?: boolean }): void;
   /** Back to a saved game that is on the setup screen (players exist, phase is select). */
   resumeGame(): void;
+  /** Wipes the saved match history. */
+  clearMatches(): void;
   /** Same mode and life, fresh totals (names and colors kept). */
   resetGame(): void;
   backToSelect(): void;
@@ -73,9 +78,31 @@ const initial: GameState = {
   layout4: "flip",
   players: [],
   history: [],
+  matches: [],
   diceRoll: idleRoll,
   firstPlayerId: null,
   startedAt: null,
+};
+
+/** The current game as a match record, or null if nothing was played. */
+function snapshotMatch(s: GameState): MatchRecord | null {
+  if (s.players.length === 0 || s.history.length === 0) return null;
+  const left = survivors(s.players);
+  return {
+    id: uid(),
+    startedAt: s.startedAt ?? s.history[0].at,
+    endedAt: Date.now(),
+    mode: s.mode,
+    startingLife: s.startingLife,
+    players: s.players.map((p) => ({ name: p.name, color: p.color, life: p.life })),
+    winner: left.length === 1 ? left[0].name : null,
+    changes: s.history.length,
+  };
+}
+
+const withMatch = (s: GameState): MatchRecord[] => {
+  const m = snapshotMatch(s);
+  return m ? [...s.matches, m].slice(-MATCH_CAP) : s.matches;
 };
 
 export function createGameStore(storage?: StateStorage) {
@@ -108,9 +135,14 @@ export function createGameStore(storage?: StateStorage) {
           if (get().players.length > 0) set({ phase: "playing" });
         },
 
+        clearMatches() {
+          set({ matches: [] });
+        },
+
         resetGame() {
           const { players, startingLife } = get();
           set({
+            matches: withMatch(get()),
             players: players.map((p) => ({
               ...p,
               life: startingLife,
@@ -126,6 +158,7 @@ export function createGameStore(storage?: StateStorage) {
 
         backToSelect() {
           set({
+            matches: withMatch(get()),
             phase: "select",
             players: [],
             history: [],
@@ -249,9 +282,9 @@ export function createGameStore(storage?: StateStorage) {
         migrate: (persisted, version) => {
           // v1 had no roll step. Keep the saved game, add the new slice.
           const old = (persisted ?? {}) as Partial<GameState>;
-          return version < 2
-            ? { ...old, diceRoll: idleRoll, firstPlayerId: null }
-            : old;
+          // v1 had no roll step; v2 had no match history. Keep the saved game, add the new slices.
+          const v2 = version < 2 ? { ...old, diceRoll: idleRoll, firstPlayerId: null } : old;
+          return version < 3 ? { ...v2, matches: [] } : v2;
         },
         storage: createJSONStorage(() => storage ?? localStorage),
         // Rehydrated manually after mount so SSR and first client render match.
@@ -263,6 +296,7 @@ export function createGameStore(storage?: StateStorage) {
           layout4: s.layout4,
           players: s.players,
           history: s.history,
+          matches: s.matches,
           diceRoll: s.diceRoll,
           firstPlayerId: s.firstPlayerId,
           startedAt: s.startedAt,

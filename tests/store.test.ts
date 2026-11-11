@@ -102,9 +102,9 @@ describe("state restore", () => {
     const s = createGameStore(storage);
     s.getState().startGame(2);
     const saved = JSON.parse(storage.data.get(STORAGE_KEY)!);
-    expect(saved.version).toBe(2);
+    expect(saved.version).toBe(3);
     expect(Object.keys(saved.state).sort()).toEqual(
-      ["diceRoll", "firstPlayerId", "history", "layout4", "mode", "phase", "players", "startedAt", "startingLife"].sort(),
+      ["diceRoll", "firstPlayerId", "history", "layout4", "matches", "mode", "phase", "players", "startedAt", "startingLife"].sort(),
     );
   });
 
@@ -113,5 +113,44 @@ describe("state restore", () => {
     const s = createGameStore(storage);
     await s.persist.rehydrate();
     expect(s.getState().phase).toBe("select");
+  });
+
+  describe("match history", () => {
+    it("saves a played game on new table, with the winner, and keeps it across games", () => {
+      const s = createGameStore(storage);
+      s.getState().startGame(2, 20, { roll: false });
+      const [a, b] = s.getState().players;
+      s.getState().changeLife(b.id, -20);
+      s.getState().backToSelect();
+      expect(s.getState().matches).toHaveLength(1);
+      expect(s.getState().matches[0]).toMatchObject({ mode: 2, winner: a.name, changes: 1 });
+      s.getState().startGame(4);
+      expect(s.getState().matches).toHaveLength(1);
+    });
+
+    it("saves on reset as unfinished when nobody has won; ignores untouched games", () => {
+      const s = createGameStore(storage);
+      s.getState().startGame(2, 20, { roll: false });
+      s.getState().resetGame(); // nothing played
+      expect(s.getState().matches).toHaveLength(0);
+      s.getState().changeLife(s.getState().players[0].id, -3);
+      s.getState().resetGame();
+      expect(s.getState().matches).toHaveLength(1);
+      expect(s.getState().matches[0].winner).toBeNull();
+    });
+
+    it("clears, and migrates a v2 save to an empty history", async () => {
+      const s = createGameStore(storage);
+      s.getState().startGame(2, 20, { roll: false });
+      s.getState().changeLife(s.getState().players[0].id, -1);
+      s.getState().backToSelect();
+      s.getState().clearMatches();
+      expect(s.getState().matches).toEqual([]);
+
+      storage.data.set(STORAGE_KEY, JSON.stringify({ state: { phase: "select", players: [], history: [] }, version: 2 }));
+      const t = createGameStore(storage);
+      await t.persist.rehydrate();
+      expect(t.getState().matches).toEqual([]);
+    });
   });
 });

@@ -395,7 +395,15 @@ button {
   margin: -22px 0 0 36px;
   color: var(--bone-dim);
 }
+.medallion.side.left { margin-left: -80px; }
 .medallion.side:active { color: var(--brass); }
+
+.matches { list-style: none; margin: 0; padding: 0; max-height: 50dvh; overflow-y: auto; overscroll-behavior: contain; }
+.matches li { padding: 12px 2px; border-bottom: 1px solid rgb(201 162 75 / 0.18); display: grid; gap: 4px; }
+.matches .m-top { display: flex; justify-content: space-between; gap: 12px; color: var(--bone); font-weight: 600; }
+.matches .m-win { color: var(--brass); }
+.matches .m-sub { color: var(--bone-dim); font-size: 14px; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.matches .m-sub i { display: inline-block; width: 9px; height: 9px; margin-right: 6px; transform: rotate(45deg); background: var(--c); border: 1px solid var(--bone); }
 
 .scrim {
   position: fixed;

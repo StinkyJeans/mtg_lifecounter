@@ -28,6 +28,21 @@ export interface LifeEvent {
   at: number;
 }
 
+/** A finished (or abandoned) game, kept on this device so past matches can be looked back on. */
+export interface MatchRecord {
+  id: string;
+  startedAt: number;
+  endedAt: number;
+  mode: GameMode;
+  startingLife: number;
+  /** Final totals, in seat order. */
+  players: { name: string; color: ManaColor; life: number }[];
+  /** Name of the last player standing, or null when nobody had won yet. */
+  winner: string | null;
+  /** Number of life changes made. */
+  changes: number;
+}
+
 export type DieSides = 6 | 20;
 export type RollStatus = "idle" | "rolling" | "tied" | "done";
 
@@ -52,6 +67,8 @@ export interface GameState {
   layout4: Layout4;
   players: Player[];
   history: LifeEvent[];
+  /** Past matches, newest last. Survives new tables and resets. */
+  matches: MatchRecord[];
   diceRoll: DiceRoll;
   /** Winner of the last completed roll, shown as a small marker during the game. */
   firstPlayerId: string | null;

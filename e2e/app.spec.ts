@@ -434,3 +434,28 @@ test.describe("mode select screen", () => {
     expect(cached).toContain("/textures/ruled-diamonds.svg");
   });
 });
+
+test("life log and match history icons sit on the seam, either side of the menu", async ({ page }) => {
+  await begin(page, 2);
+  const menu = (await page.getByTestId("menu-button").boundingBox())!;
+  const log = (await page.getByTestId("open-log").boundingBox())!;
+  const matches = (await page.getByTestId("open-matches").boundingBox())!;
+  expect(matches.x + matches.width).toBeLessThanOrEqual(menu.x);
+  expect(log.x).toBeGreaterThanOrEqual(menu.x + menu.width);
+  expect(matches.width).toBeGreaterThanOrEqual(44);
+
+  await page.getByTestId("open-matches").click();
+  await expect(page.getByTestId("matches-empty")).toBeVisible();
+  await page.getByTestId("matches-back").click();
+
+  // play a little, leave: the game is kept in the history
+  await page.getByTestId("plus-0").click();
+  await page.getByTestId("menu-button").click();
+  await page.getByTestId("leave").click();
+  await page.getByTestId("confirm").click();
+  await begin(page, 2);
+  await page.getByTestId("open-matches").click();
+  await expect(page.getByTestId("matches").locator("li")).toHaveCount(1);
+  await page.getByTestId("matches-clear").click();
+  await expect(page.getByTestId("matches-empty")).toBeVisible();
+});
