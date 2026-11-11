@@ -28,6 +28,23 @@ export interface LifeEvent {
   at: number;
 }
 
+export type DieSides = 6 | 20;
+export type RollStatus = "idle" | "rolling" | "tied" | "done";
+
+/** The "roll for first player" step. Persisted, so a reload mid-roll restores it. */
+export interface DiceRoll {
+  /** The roll step is on screen. */
+  active: boolean;
+  sides: DieSides;
+  round: number;
+  /** Players who must roll this round (everyone in round 1, then only the tied). */
+  contenders: string[];
+  /** Locked results by player id. Tied players are cleared when the next round starts. */
+  rolls: Record<string, number>;
+  winnerId: string | null;
+  status: RollStatus;
+}
+
 export interface GameState {
   phase: "select" | "playing";
   mode: GameMode;
@@ -35,6 +52,9 @@ export interface GameState {
   layout4: Layout4;
   players: Player[];
   history: LifeEvent[];
+  diceRoll: DiceRoll;
+  /** Winner of the last completed roll, shown as a small marker during the game. */
+  firstPlayerId: string | null;
   startedAt: number | null;
 }
 

@@ -12,9 +12,11 @@ export function useServiceWorker(): { updateReady: boolean; applyUpdate(): void 
   useEffect(() => {
     if (process.env.NODE_ENV !== "production" || !("serviceWorker" in navigator)) return;
 
+    // First install claims the page too; only an *update* should reload.
+    const hadController = !!navigator.serviceWorker.controller;
     let reloading = false;
     const onControllerChange = () => {
-      if (reloading) return;
+      if (reloading || !hadController) return;
       reloading = true;
       window.location.reload();
     };

@@ -1,7 +1,8 @@
 "use client";
 
 import { memo, useCallback, useEffect, useRef, useState } from "react";
-import { Minus, Plus, Undo } from "./Icons";
+import { Cube, Minus, Plus, Undo } from "griddy-icons";
+import { RollOverlay, type RollSeatView } from "./RollOverlay";
 import { useLifeGesture } from "./useLifeGesture";
 import { COLOR_NAMES, MANA_COLORS, defeatReason } from "@/lib/game/rules";
 import type { ManaColor } from "@/lib/game/types";
@@ -41,11 +42,25 @@ interface Props {
   index: number;
   rotationPortrait: Rotation;
   rotationLandscape: Rotation;
+  /** Present only while the roll-for-first step is open. */
+  rollView: RollSeatView | null;
+  onRoll: () => void;
+  onRollLanded: () => void;
 }
 
 /** Subscribes to one player only, so a tap re-renders one panel. */
-function PlayerPanelImpl({ index, rotationPortrait, rotationLandscape }: Props) {
+function PlayerPanelImpl({
+  index,
+  rotationPortrait,
+  rotationLandscape,
+  rollView,
+  onRoll,
+  onRollLanded,
+}: Props) {
   const player = useGameStore((s) => s.players[index]);
+  const isFirst = useGameStore(
+    (s) => s.firstPlayerId !== null && s.firstPlayerId === s.players[index]?.id,
+  );
   const [picking, setPicking] = useState(false);
   const [burst, setBurst] = useState({ delta: 0, key: 0, dir: 0 });
   const clearBurst = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -139,6 +154,16 @@ function PlayerPanelImpl({ index, rotationPortrait, rotationLandscape }: Props) 
           </div>
         )}
 
+        {isFirst && !rollView && (
+          <div className="first-mark" data-testid={`first-${index}`}>
+            <Cube size={16} /> First
+          </div>
+        )}
+
+        {rollView && (
+          <RollOverlay index={index} view={rollView} onRoll={onRoll} onLanded={onRollLanded} />
+        )}
+
         {reason && (
           <div className="defeat" data-testid={`defeated-${index}`}>
             <h3>Defeated</h3>
@@ -147,7 +172,7 @@ function PlayerPanelImpl({ index, rotationPortrait, rotationLandscape }: Props) 
               className="btn"
               onClick={() => gameStore.getState().undoLast(player.id)}
             >
-              <Undo width={20} height={20} /> Undo
+              <Undo size={20} /> Undo
             </button>
           </div>
         )}

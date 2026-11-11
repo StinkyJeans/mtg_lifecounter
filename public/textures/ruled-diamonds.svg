@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56" fill="none" stroke="#c9a24b" stroke-width="1" stroke-linecap="round" opacity="0.09">
+  <!-- faint engraved diamond lattice; slightly uneven so it reads as hand-ruled. Repeat in both axes. -->
+  <path d="M28 0.4 L55.6 28.2 L27.8 55.7 L0.3 27.9 Z"/>
+  <path d="M28 12.6 L43.4 28 L28.1 43.5 L12.5 27.8 Z" opacity=".6"/>
+  <path d="M0 0 L0.2 0"/><path d="M56 56 L55.8 56"/>
+</svg>

@@ -15,6 +15,15 @@ export const HOLD_STEP = 5;
 
 export const MANA_COLORS: ManaColor[] = ["W", "U", "B", "R", "G"];
 
+/** Keep in sync with --mana-* in globals.css (canvas/WebGL cannot read CSS vars). */
+export const MANA_HEX: Record<ManaColor, string> = {
+  W: "#cfc6a4",
+  U: "#4b7da3",
+  B: "#5b5363",
+  R: "#b04a35",
+  G: "#5a8450",
+};
+
 export const DEFAULT_COLORS: Record<GameMode, ManaColor[]> = {
   2: ["R", "U"],
   4: ["R", "U", "G", "W"],

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Cinzel, Spectral } from "next/font/google";
+import { Cinzel, Inter } from "next/font/google";
 import "./globals.css";
 
 // next/font self-hosts these at build time (served from /_next/static/media),
@@ -11,11 +11,11 @@ const cinzel = Cinzel({
   display: "swap",
 });
 
-const spectral = Spectral({
-  variable: "--font-spectral",
+// Inter for everything people read (names, buttons, labels); Cinzel only for big numerals and titles.
+const ui = Inter({
+  variable: "--font-ui",
   subsets: ["latin"],
-  weight: ["400", "600"],
-  style: ["normal", "italic"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -42,7 +42,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${cinzel.variable} ${spectral.variable}`}>
+    <html lang="en" className={`${cinzel.variable} ${ui.variable}`}>
       <body>{children}</body>
     </html>
   );

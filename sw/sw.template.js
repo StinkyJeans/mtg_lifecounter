@@ -13,7 +13,9 @@
  */
 const BUILD_ID = "__BUILD_ID__";
 const CACHE = `mtg-life-${BUILD_ID}`;
-const SHELL = ["/", "/manifest.webmanifest", "/icons/icon-192.png", "/icons/icon-512.png", "/icons/maskable-512.png", "/icons/apple-touch-icon.png", "/icons/mark.svg"];
+// Filled by scripts/stamp-sw.mjs --post with every file Next emitted under /_next/static.
+const PRECACHE = [];
+const SHELL = ["/", "/manifest.webmanifest", "/icons/icon-192.png", "/icons/icon-512.png", "/icons/maskable-512.png", "/icons/apple-touch-icon.png", "/icons/mark.svg", "/textures/grain-paper.svg", "/textures/ruled-diamonds.svg"];
 
 const STATIC_RE = /\/_next\/static\/[^"'\s)\\<>]+/g;
 
@@ -38,7 +40,7 @@ async function precache() {
     }
   }
   await Promise.all(
-    [...assets, ...SHELL.filter((u) => u !== "/")].map(async (u) => {
+    [...assets, ...PRECACHE, ...SHELL.filter((u) => u !== "/")].map(async (u) => {
       if (await cache.match(u)) return;
       try {
         const r = await fetch(u, { cache: "reload" });
@@ -81,7 +83,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  if (url.pathname.startsWith("/_next/static/") || url.pathname.startsWith("/icons/") || url.pathname === "/manifest.webmanifest") {
+  if (url.pathname.startsWith("/_next/static/") || url.pathname.startsWith("/icons/") || url.pathname.startsWith("/textures/") || url.pathname === "/manifest.webmanifest") {
     event.respondWith(
       caches.open(CACHE).then(async (cache) => {
         const hit = await cache.match(req);

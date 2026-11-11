@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220">
+  <!-- warm paper grain, ~4% opacity baked into the alpha so it can be used as a plain background-image -->
+  <filter id="n" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="7" stitchTiles="stitch"/>
+    <feColorMatrix values="0 0 0 0 0.93  0 0 0 0 0.87  0 0 0 0 0.74  0 0 0 0.9 -0.30"/>
+    <feComponentTransfer><feFuncA type="linear" slope="0.12"/></feComponentTransfer>
+  </filter>
+  <rect width="220" height="220" filter="url(#n)"/>
+</svg>
